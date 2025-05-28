@@ -162,10 +162,20 @@ async function calcularHorarios() {
         const duracaoDiaMinutos = (sunset - sunrise) / (1000 * 60);
         const horaHalachica = duracaoDiaMinutos / 12;
         
-        // Cálculos haláchicos
+        // Cálculos haláchicos ajustados conforme suas especificações
+        
+        // Shacharit: do nascer do sol até 4 horas haláchicas depois
         const fimShacharit = new Date(sunrise.getTime() + (4 * horaHalachica * 60 * 1000));
-        const minchaGedola = new Date(solarNoon.getTime() + (30 * 60 * 1000));
-        const minchaKetana = new Date(sunset.getTime() - (2.5 * horaHalachica * 60 * 1000));
+        
+        // Minchá Gedola: meia hora após o meio-dia solar até 9.5 horas após o nascer do sol
+        const minchaGedolaInicio = new Date(solarNoon.getTime() + (30 * 60 * 1000));
+        const minchaGedolaFim = new Date(sunrise.getTime() + (9.5 * horaHalachica * 60 * 1000));
+        
+        // Minchá Ketana: 9.5 horas após o nascer do sol até 1/12 do dia antes do pôr do sol (20 minutos aproximados)
+        const minchaKetanaInicio = minchaGedolaFim;
+        const minchaKetanaFim = new Date(sunset.getTime() - (horaHalachica * 60 * 1000 / 3)); // 1/12 do dia ≈ 20 minutos
+        
+        // Arvit: 30 minutos haláchicos após o pôr do sol
         const arvit = new Date(sunset.getTime() + (0.5 * horaHalachica * 60 * 1000));
         
         // Shabbat
@@ -178,13 +188,36 @@ async function calcularHorarios() {
         document.getElementById('duracao-dia').textContent = `${Math.floor(duracaoDiaMinutos / 60)}h ${Math.floor(duracaoDiaMinutos % 60)}m`;
         document.getElementById('meio-dia').textContent = formatarHora(solarNoon);
         
+        // Shacharit - Intervalo detalhado
         document.getElementById('shema').innerHTML = `
-            De ${formatarHora(sunrise)} até ${formatarHora(fimShacharit)}
+            <div class="shacharit-info">
+                <p><strong>Início:</strong> ${formatarHora(sunrise)} (nascer do sol)</p>
+                <p><strong>Final:</strong> ${formatarHora(fimShacharit)} (4 horas haláchicas após o nascer)</p>
+            </div>
         `;
         
-        document.getElementById('mincha-gedola').textContent = formatarHora(minchaGedola);
-        document.getElementById('mincha-ketana').textContent = formatarHora(minchaKetana);
-        document.getElementById('arvit').textContent = `${formatarHora(arvit)} (30 minutos haláchicos após o pôr do sol)`;
+        // Minchá - Mostrando ambos os períodos
+        document.getElementById('mincha-gedola').innerHTML = `
+            <div class="mincha-info">
+                <p><strong>Minchá Gedola:</strong> ${formatarHora(minchaGedolaInicio)} até ${formatarHora(minchaGedolaFim)}</p>
+                <p class="small">(Meia hora após o meio-dia até 9.5 horas haláchicas)</p>
+            </div>
+        `;
+        
+        document.getElementById('mincha-ketana').innerHTML = `
+            <div class="mincha-info">
+                <p><strong>Minchá Ketana:</strong> ${formatarHora(minchaKetanaInicio)} até ${formatarHora(minchaKetanaFim)}</p>
+                <p class="small">(9.5 horas haláchicas até 20 minutos antes do pôr do sol)</p>
+            </div>
+        `;
+        
+        // Arvit
+        document.getElementById('arvit').innerHTML = `
+            <div class="arvit-info">
+                <p><strong>Arvit:</strong> ${formatarHora(arvit)}</p>
+                <p class="small">(30 minutos haláchicos após o pôr do sol)</p>
+            </div>
+        `;
         
         // Mostrar card de Shabbat apenas para sexta-feira
         const shabbatCard = document.getElementById('shabbat-card');
